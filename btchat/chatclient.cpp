@@ -3,7 +3,7 @@
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the examples of the QtBluetooth module.
+** This file is part of the QtBluetooth module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,61 +38,71 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.2
+#include "chatclient.h"
 
-/********************
- * bluetoothImage
- * text
- *******************/
-Rectangle {
-    property bool animationRunning: true
+#include <qbluetoothsocket.h>
 
-    function appendText(newText) {
-        searchText.text += newText
-    }
-
-    width: searchText.width + 40;
-    height: searchText.height + bluetoothImage.height + 40;
-    color: "#d7d6d5"
-    border.color: "black"
-    border.width: 1
-    radius: 5
-
-    Behavior on height {
-        NumberAnimation { duration: 300 }
-    }
-
-    Image {
-        id: bluetoothImage
-        source: "images/default.png"
-        anchors.top: parent.top
-        anchors.topMargin: 10
-        anchors.horizontalCenter: parent.horizontalCenter
-
-        RotationAnimation on rotation{
-            id: ranimation
-            target: bluetoothImage
-            easing.type: Easing.InOutBack
-            property: "rotation"
-            from: 0
-            to: 360
-            duration: 2000
-            loops: Animation.Infinite
-            alwaysRunToEnd: true
-            running: animationRunning
-        }
-    }
-
-    Text {
-        id: searchText
-
-        anchors.top: bluetoothImage.bottom
-        //anchors.bottom: parent.bottom
-        anchors.topMargin: 10
-        anchors.horizontalCenter: parent.horizontalCenter
-        text: qsTr("Searching for chat service...");
-        color: "black"
-
-    }
+ChatClient::ChatClient(QObject *parent)
+:   QObject(parent), socket(0)
+{
 }
 
+ChatClient::~ChatClient()
+{
+    stopClient();
+}
+
+//! [startClient]
+void ChatClient::startClient(const QBluetoothServiceInfo &remoteService)
+{
+    if (socket)
+        return;
+
+    // Connect to service
+    socket = new QBluetoothSocket(QBluetoothServiceInfo::RfcommProtocol);
+    qDebug() << "Create socket";
+    socket->connectToService(remoteService);
+    qDebug() << "ConnectToService done";
+
+    connect(socket, SIGNAL(readyRead()), this, SLOT(readSocket()));
+    connect(socket, SIGNAL(connected()), this, SLOT(connected()));
+    connect(socket, SIGNAL(disconnected()), this, SIGNAL(disconnected()));
+}
+//! [startClient]
+
+//! [stopClient]
+void ChatClient::stopClient()
+{
+    delete socket;
+    socket = 0;
+}
+//! [stopClient]
+
+//! [readSocket]
+void ChatClient::readSocket()
+{
+    if (!socket)
+        return;
+
+    while (socket->canReadLine()) {
+        QByteArray line = socket->readLine();
+        emit messageReceived(socket->peerName(),
+                             QString::fromUtf8(line.constData(), line.length()));
+    }
+}
+//! [readSocket]
+
+//! [sendMessage]
+void ChatClient::sendMessage(const QString &message)
+{
+    QByteArray text = message.toUtf8() + '\n';
+    socket->write(text);
+}
+//! [sendMessage]
+
+//! [connected]
+void ChatClient::connected()
+{
+    emit connected(socket->peerName());
+}
+//! [connected]

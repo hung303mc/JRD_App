@@ -3,7 +3,7 @@
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the examples of the QtBluetooth module.
+** This file is part of the QtBluetooth module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,61 +38,50 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.2
+#ifndef CHATSERVER_H
+#define CHATSERVER_H
 
-/********************
- * bluetoothImage
- * text
- *******************/
-Rectangle {
-    property bool animationRunning: true
+#include <qbluetoothserviceinfo.h>
+#include <qbluetoothaddress.h>
 
-    function appendText(newText) {
-        searchText.text += newText
-    }
+#include <QtCore/QObject>
+#include <QtCore/QList>
 
-    width: searchText.width + 40;
-    height: searchText.height + bluetoothImage.height + 40;
-    color: "#d7d6d5"
-    border.color: "black"
-    border.width: 1
-    radius: 5
+QT_FORWARD_DECLARE_CLASS(QBluetoothServer)
+QT_FORWARD_DECLARE_CLASS(QBluetoothSocket)
 
-    Behavior on height {
-        NumberAnimation { duration: 300 }
-    }
+QT_USE_NAMESPACE
 
-    Image {
-        id: bluetoothImage
-        source: "images/default.png"
-        anchors.top: parent.top
-        anchors.topMargin: 10
-        anchors.horizontalCenter: parent.horizontalCenter
+//! [declaration]
+class ChatServer : public QObject
+{
+    Q_OBJECT
 
-        RotationAnimation on rotation{
-            id: ranimation
-            target: bluetoothImage
-            easing.type: Easing.InOutBack
-            property: "rotation"
-            from: 0
-            to: 360
-            duration: 2000
-            loops: Animation.Infinite
-            alwaysRunToEnd: true
-            running: animationRunning
-        }
-    }
+public:
+    explicit ChatServer(QObject *parent = 0);
+    ~ChatServer();
 
-    Text {
-        id: searchText
+    void startServer(const QBluetoothAddress &localAdapter = QBluetoothAddress());
+    void stopServer();
 
-        anchors.top: bluetoothImage.bottom
-        //anchors.bottom: parent.bottom
-        anchors.topMargin: 10
-        anchors.horizontalCenter: parent.horizontalCenter
-        text: qsTr("Searching for chat service...");
-        color: "black"
+public slots:
+    void sendMessage(const QString &message);
 
-    }
-}
+signals:
+    void messageReceived(const QString &sender, const QString &message);
+    void clientConnected(const QString &name);
+    void clientDisconnected(const QString &name);
 
+private slots:
+    void clientConnected();
+    void clientDisconnected();
+    void readSocket();
+
+private:
+    QBluetoothServer *rfcommServer;
+    QBluetoothServiceInfo serviceInfo;
+    QList<QBluetoothSocket *> clientSockets;
+};
+//! [declaration]
+
+#endif // CHATSERVER_H

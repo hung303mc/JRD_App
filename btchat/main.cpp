@@ -3,7 +3,7 @@
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the examples of the QtBluetooth module.
+** This file is part of the QtBluetooth module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,61 +38,23 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.2
+#include "chat.h"
 
-/********************
- * bluetoothImage
- * text
- *******************/
-Rectangle {
-    property bool animationRunning: true
+#include <QApplication>
+//#include <QtCore/QLoggingCategory>
 
-    function appendText(newText) {
-        searchText.text += newText
-    }
+int main(int argc, char *argv[])
+{
+    //QLoggingCategory::setFilterRules(QStringLiteral("qt.bluetooth* = true"));
+    QApplication app(argc, argv);
 
-    width: searchText.width + 40;
-    height: searchText.height + bluetoothImage.height + 40;
-    color: "#d7d6d5"
-    border.color: "black"
-    border.width: 1
-    radius: 5
+    Chat d;
+    QObject::connect(&d, SIGNAL(accepted()), &app, SLOT(quit()));
 
-    Behavior on height {
-        NumberAnimation { duration: 300 }
-    }
+    d.show();
 
-    Image {
-        id: bluetoothImage
-        source: "images/default.png"
-        anchors.top: parent.top
-        anchors.topMargin: 10
-        anchors.horizontalCenter: parent.horizontalCenter
+    app.exec();
 
-        RotationAnimation on rotation{
-            id: ranimation
-            target: bluetoothImage
-            easing.type: Easing.InOutBack
-            property: "rotation"
-            from: 0
-            to: 360
-            duration: 2000
-            loops: Animation.Infinite
-            alwaysRunToEnd: true
-            running: animationRunning
-        }
-    }
-
-    Text {
-        id: searchText
-
-        anchors.top: bluetoothImage.bottom
-        //anchors.bottom: parent.bottom
-        anchors.topMargin: 10
-        anchors.horizontalCenter: parent.horizontalCenter
-        text: qsTr("Searching for chat service...");
-        color: "black"
-
-    }
+    return 0;
 }
 

@@ -3,7 +3,7 @@
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the examples of the QtBluetooth module.
+** This file is part of the QtBluetooth module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,61 +38,55 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.2
+#include "ui_chat.h"
 
-/********************
- * bluetoothImage
- * text
- *******************/
-Rectangle {
-    property bool animationRunning: true
+#include <QDialog>
 
-    function appendText(newText) {
-        searchText.text += newText
-    }
+#include <qbluetoothserviceinfo.h>
+#include <qbluetoothsocket.h>
+#include <qbluetoothhostinfo.h>
 
-    width: searchText.width + 40;
-    height: searchText.height + bluetoothImage.height + 40;
-    color: "#d7d6d5"
-    border.color: "black"
-    border.width: 1
-    radius: 5
+#include <QDebug>
 
-    Behavior on height {
-        NumberAnimation { duration: 300 }
-    }
+QT_USE_NAMESPACE
 
-    Image {
-        id: bluetoothImage
-        source: "images/default.png"
-        anchors.top: parent.top
-        anchors.topMargin: 10
-        anchors.horizontalCenter: parent.horizontalCenter
+class ChatServer;
+class ChatClient;
 
-        RotationAnimation on rotation{
-            id: ranimation
-            target: bluetoothImage
-            easing.type: Easing.InOutBack
-            property: "rotation"
-            from: 0
-            to: 360
-            duration: 2000
-            loops: Animation.Infinite
-            alwaysRunToEnd: true
-            running: animationRunning
-        }
-    }
+//! [declaration]
+class Chat : public QDialog
+{
+    Q_OBJECT
 
-    Text {
-        id: searchText
+public:
+    Chat(QWidget *parent = 0);
+    ~Chat();
 
-        anchors.top: bluetoothImage.bottom
-        //anchors.bottom: parent.bottom
-        anchors.topMargin: 10
-        anchors.horizontalCenter: parent.horizontalCenter
-        text: qsTr("Searching for chat service...");
-        color: "black"
+signals:
+    void sendMessage(const QString &message);
 
-    }
-}
+private slots:
+    void connectClicked();
+    void sendClicked();
 
+    void showMessage(const QString &sender, const QString &message);
+
+    void clientConnected(const QString &name);
+    void clientDisconnected(const QString &name);
+    void clientDisconnected();
+    void connected(const QString &name);
+
+    void newAdapterSelected();
+
+private:
+    int adapterFromUserSelection() const;
+    int currentAdapterIndex;
+    Ui_Chat *ui;
+
+    ChatServer *server;
+    QList<ChatClient *> clients;
+    QList<QBluetoothHostInfo> localAdapters;
+
+    QString localName;
+};
+//! [declaration]

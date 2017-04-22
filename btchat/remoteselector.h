@@ -3,7 +3,7 @@
 ** Copyright (C) 2015 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
-** This file is part of the examples of the QtBluetooth module.
+** This file is part of the QtBluetooth module of the Qt Toolkit.
 **
 ** $QT_BEGIN_LICENSE:BSD$
 ** You may use this file under the terms of the BSD license as follows:
@@ -38,61 +38,50 @@
 **
 ****************************************************************************/
 
-import QtQuick 2.2
+#ifndef REMOTESELECTOR_H
+#define REMOTESELECTOR_H
 
-/********************
- * bluetoothImage
- * text
- *******************/
-Rectangle {
-    property bool animationRunning: true
+#include <QDialog>
 
-    function appendText(newText) {
-        searchText.text += newText
-    }
+#include <qbluetoothuuid.h>
+#include <qbluetoothserviceinfo.h>
+#include <qbluetoothservicediscoveryagent.h>
 
-    width: searchText.width + 40;
-    height: searchText.height + bluetoothImage.height + 40;
-    color: "#d7d6d5"
-    border.color: "black"
-    border.width: 1
-    radius: 5
+QT_FORWARD_DECLARE_CLASS(QModelIndex)
+QT_FORWARD_DECLARE_CLASS(QListWidgetItem)
 
-    Behavior on height {
-        NumberAnimation { duration: 300 }
-    }
+QT_USE_NAMESPACE
 
-    Image {
-        id: bluetoothImage
-        source: "images/default.png"
-        anchors.top: parent.top
-        anchors.topMargin: 10
-        anchors.horizontalCenter: parent.horizontalCenter
-
-        RotationAnimation on rotation{
-            id: ranimation
-            target: bluetoothImage
-            easing.type: Easing.InOutBack
-            property: "rotation"
-            from: 0
-            to: 360
-            duration: 2000
-            loops: Animation.Infinite
-            alwaysRunToEnd: true
-            running: animationRunning
-        }
-    }
-
-    Text {
-        id: searchText
-
-        anchors.top: bluetoothImage.bottom
-        //anchors.bottom: parent.bottom
-        anchors.topMargin: 10
-        anchors.horizontalCenter: parent.horizontalCenter
-        text: qsTr("Searching for chat service...");
-        color: "black"
-
-    }
+QT_BEGIN_NAMESPACE
+namespace Ui {
+    class RemoteSelector;
 }
+QT_END_NAMESPACE
 
+class RemoteSelector : public QDialog
+{
+    Q_OBJECT
+
+public:
+    explicit RemoteSelector(const QBluetoothAddress &localAdapter, QWidget *parent = 0);
+    ~RemoteSelector();
+
+    void startDiscovery(const QBluetoothUuid &uuid);
+    void stopDiscovery();
+    QBluetoothServiceInfo service() const;
+
+private:
+    Ui::RemoteSelector *ui;
+
+    QBluetoothServiceDiscoveryAgent *m_discoveryAgent;
+    QBluetoothServiceInfo m_service;
+    QMap<QListWidgetItem *, QBluetoothServiceInfo> m_discoveredServices;
+
+private slots:
+    void serviceDiscovered(const QBluetoothServiceInfo &serviceInfo);
+    void discoveryFinished();
+    void on_remoteDevices_itemActivated(QListWidgetItem *item);
+    void on_cancelButton_clicked();
+};
+
+#endif // REMOTESELECTOR_H

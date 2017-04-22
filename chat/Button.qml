@@ -38,7 +38,12 @@
 **
 ****************************************************************************/
 
+
 import QtQuick 2.2
+
+/************************
+ *Create a simple button
+ ************************/
 
 Rectangle {
     // Identifier of the item
@@ -53,6 +58,7 @@ Rectangle {
     border.width: 1
     border.color: "#35322f"
     color: "#14aaff"
+    //bind the "Rectangle size" to the "text size"
     height: buttonLabel.height * 1.5
     width: buttonLabel.width * 1.5
 
@@ -74,7 +80,6 @@ Rectangle {
         anchors.fill: parent    // Stretch the area to the parent's dimension
         onClicked: buttonClick()
     }
-
 
     // Scale the button when pressed
     scale: buttonMouseArea.pressed ? 1.1 : 1.0
