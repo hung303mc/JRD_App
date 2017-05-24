@@ -44,6 +44,7 @@ import QtBluetooth 5.3
 Item {
     id: top
 
+    //Emitted after the object has been instantiated.
     Component.onCompleted: state = "begin"
 
     property string remoteDeviceName: ""
@@ -55,13 +56,14 @@ Item {
         running: true
         discoveryMode: BluetoothDiscoveryModel.MinimalServiceDiscovery
     //! [BtDiscoveryModel-1]
+        // when property running change
         onRunningChanged : {
             if (!btModel.running && top.state == "begin" && !serviceFound) {
                 searchBox.animationRunning = false;
                 searchBox.appendText("\nNo service found. \n\nPlease start server\nand restart app.")
             }
         }
-
+        // when property error change
         onErrorChanged: {
             if (error != BluetoothDiscoveryModel.NoError && !btModel.running) {
                 searchBox.animationRunning = false
@@ -70,6 +72,8 @@ Item {
         }
 
     //! [BtDiscoveryModel-2]
+        // Signal is serviceDiscovered
+        // Handler is onServiceDiscovered
         onServiceDiscovered: {
             if (serviceFound)
                 return
@@ -77,11 +81,12 @@ Item {
             console.log("Found new service " + service.deviceAddress + " " + service.deviceName + " " + service.serviceName);
             searchBox.appendText("\nConnecting to server...")
             remoteDeviceName = service.deviceName
+            // set service to socket
             socket.setService(service)
         }
     //! [BtDiscoveryModel-2]
     //! [BtDiscoveryModel-3]
-        uuidFilter: "6eca4197-f76f-4f29-8394-929eb2fc917f"
+        uuidFilter: "e8e10f95-1a70-4b27-9ccf-02010264e9c8"
     }
     //! [BtDiscoveryModel-3]
 
@@ -90,6 +95,7 @@ Item {
         id: socket
         connected: true
 
+        // property socketState change-> signal
         onSocketStateChanged: {
             console.log("Connected to server")
             top.state = "chatActive"
