@@ -15,8 +15,10 @@ void setup()
   BTSerial.begin(38400);  // HC-05 default speed in AT command more
   #else
   Serial.println("Enter Communicate mode");
-  BTSerial.begin(115200);  // HC-05 default speed in AT command more
+  BTSerial.begin(115200);  // HC-05 speed in communicate mode
   #endif
+  
+  BTSerial.println("Hello, bluetooth work!");
 }
 
 void loop()
